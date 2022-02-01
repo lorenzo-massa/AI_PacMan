@@ -85,18 +85,18 @@ def depthFirstSearch(problem):
     To get started, you might want to try some of these simple commands to
     understand the search problem that is being passed in:
     """
-    print("Start:", problem.getStartState())
-    print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
-    print("Start's successors:", problem.getSuccessors(problem.getStartState()))
+    #print("Start:", problem.getStartState())
+    #print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
+    #print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     
     "*** YOUR CODE HERE ***"
     #util.raiseNotDefined()
     visited = []
     queue = Stack()
 
-    x, y = problem.getStartState()
+    state = problem.getStartState()
 
-    path = [(x,y),[]]
+    path = [state,[]]
 
     queue.push(path)
 
