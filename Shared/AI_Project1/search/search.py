@@ -20,6 +20,8 @@ Pacman agents (in searchAgents.py).
 from inspect import stack
 import util
 
+from util import Stack
+
 class SearchProblem:
     """
     This class outlines the structure of a search problem, but doesn't implement
@@ -89,32 +91,37 @@ def depthFirstSearch(problem):
     
     "*** YOUR CODE HERE ***"
     #util.raiseNotDefined()
-    visited = set()
-    queue = []
-    path = [] #nodo,direction to reach the node
+    visited = []
+    queue = Stack()
+
     x, y = problem.getStartState()
 
-    ##start state
+    path = [(x,y),[]]
 
+    queue.push(path)
 
     while not queue.isEmpty():
-            nextCoord, directions, cost = closed.pop()
-            node = path[-1]
+            path = queue.pop()
+            node = path[0]
             if node not in visited:
-                visited.add(node)
+                visited.append(node)
 
-                if node.x == 1 or node.y == 1 or node.z == 1: #goal test
-                    return cost,path
+                print(path)
 
-                for i in node.getNeighbors(): #creating neighbors
-                    neighbor = i [0]
-                    costN = i [1]
-                    pathN = path.copy()
-                    if neighbor not in visited: #visiting neighbors
-                        total_cost = cost + costN
-                        pathN.append(neighbor)
-                        heapq.heappush(queue,(total_cost, pathN))
-        return NULL
+                if problem.isGoalState(node): #goal test
+                    return path[1]
+
+                for i in problem.getSuccessors(node): #creating neighbors
+                    neighborState = i [0] #next position (x,y)
+                    #neighborDirection = i [1] #directions string
+                    #cost = i[2]
+                    pathN = []
+                    
+                    if neighborState not in visited: #visiting neighbors
+                        pathN.append(i[0])
+                        pathN.append(path[1].copy())
+                        pathN[1].append(i[1])
+                        queue.push(pathN)
 
 
 
