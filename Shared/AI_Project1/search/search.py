@@ -17,10 +17,8 @@ In search.py, you will implement generic search algorithms which are called by
 Pacman agents (in searchAgents.py).
 """
 
-from inspect import stack
 import util
-
-from util import Stack
+from util import *
 
 class SearchProblem:
     """
@@ -106,10 +104,10 @@ def depthFirstSearch(problem):
             if node not in visited:
                 visited.append(node)
 
-                print(path)
-
                 if problem.isGoalState(node): #goal test
-                    return path[1]
+                        #print(path[1])
+                        return path[1]
+                    
 
                 for i in problem.getSuccessors(node): #creating neighbors
                     neighborState = i [0] #next position (x,y)
@@ -123,23 +121,79 @@ def depthFirstSearch(problem):
                         pathN[1].append(i[1])
                         queue.push(pathN)
 
-
-
-
-
-
-
-
-
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    ##util.raiseNotDefined()
+
+    visited = []
+    queue = Queue()
+
+    state = problem.getStartState()
+
+    path = [state,[]]
+
+    queue.push(path)
+
+    while not queue.isEmpty():
+            path = queue.pop()
+            node = path[0]
+            if node not in visited:
+                visited.append(node)
+
+                if problem.isGoalState(node): #goal test
+                        #print(path[1])
+                        return path[1]
+                    
+
+                for i in problem.getSuccessors(node): #creating neighbors
+                    neighborState = i [0] #next position (x,y)
+                    #neighborDirection = i [1] #directions string
+                    #cost = i[2]
+                    pathN = []
+                    
+                    if neighborState not in visited: #visiting neighbors
+                        pathN.append(i[0])
+                        pathN.append(path[1].copy())
+                        pathN[1].append(i[1])
+                        queue.push(pathN)
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    visited = []
+    queue = PriorityQueue()
+
+    state = problem.getStartState()
+    cost = 0
+    path = [state,[], cost]
+
+    queue.push(path,cost)
+
+    while not queue.isEmpty():
+            path = queue.pop()
+            node = path[0]
+            if node not in visited:
+                visited.append(node)
+
+                if problem.isGoalState(node): #goal test
+                        #print(path[1])
+                        return path[1]
+                    
+
+                for i in problem.getSuccessors(node): #creating neighbors
+                    neighborState = i [0] #next position (x,y)
+                    #neighborDirection = i [1] #directions string
+                    #cost = i[2]
+                    pathN = []
+                   
+                    if neighborState not in visited: #visiting neighbors
+                        pathN.append(i[0])
+                        pathN.append(path[1].copy())
+                        pathN[1].append(i[1])
+                        cost = path[2]+i[2]
+                        pathN.append(cost)
+                        queue.push(pathN,cost)
 
 def nullHeuristic(state, problem=None):
     """
@@ -147,11 +201,44 @@ def nullHeuristic(state, problem=None):
     goal in the provided SearchProblem.  This heuristic is trivial.
     """
     return 0
+    
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    visited = []
+    queue = PriorityQueue()
+
+    state = problem.getStartState()
+    cost = heuristic(state,problem)
+    path = [state,[], cost]
+
+    queue.push(path,cost)
+
+    while not queue.isEmpty():
+            path = queue.pop()
+            node = path[0]
+            if node not in visited:
+                visited.append(node)
+
+                if problem.isGoalState(node): #goal test
+                        #print(path[1])
+                        return path[1]
+                    
+
+                for i in problem.getSuccessors(node): #creating neighbors
+                    neighborState = i [0] #next position (x,y)
+                    #neighborDirection = i [1] #directions string
+                    #cost = i[2]
+                    pathN = []
+                   
+                    if neighborState not in visited: #visiting neighbors
+                        pathN.append(i[0])
+                        pathN.append(path[1].copy())
+                        pathN[1].append(i[1])
+                        cost = path[2]+i[2]+heuristic(i[0],problem)-heuristic(path[0],problem)
+                        pathN.append(cost)
+                        queue.push(pathN,cost)
 
 
 # Abbreviations
