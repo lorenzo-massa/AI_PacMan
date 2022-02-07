@@ -146,8 +146,6 @@ def breadthFirstSearch(problem):
                 visited.append(node)
                 
                 if problem.isGoalState(node): #goal test
-                    print(path[1])
-                    print(path[0])
                     return path[1]
                     
 

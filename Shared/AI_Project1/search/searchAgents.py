@@ -290,6 +290,12 @@ class CornersProblem(search.SearchProblem):
         # in initializing the problem
         "*** YOUR CODE HERE ***"
 
+    def getWalls(self):
+        return self.walls
+
+    def getPacmanPosition(self):
+        return 
+
     def getStartState(self):
         """
         Returns the start state (in your state space, not the full Pacman state
@@ -387,6 +393,7 @@ def cornersHeuristic(state, problem):
 
     "*** YOUR CODE HERE ***"
 
+
     cBLx,cBLy = corners[0]
     cTLx,cTLy = corners[1]
     cBRx,cBRy = corners[2]
@@ -394,19 +401,68 @@ def cornersHeuristic(state, problem):
 
 
     x,y,BL,TL,BR,TR = state
+
+    b = []
+    b.append(BL)
+    b.append(TL)
+    b.append(BR)
+    b.append(TR)
+
+    p = []
+
+    p0 = distanceManattan((state[0],state[1]),corners[0])
+    p1 = distanceManattan((state[0],state[1]),corners[1])
+    p2 = distanceManattan((state[0],state[1]),corners[2])
+    p3 = distanceManattan((state[0],state[1]),corners[3])
+
+    if not BL:
+        p.append(p0)
+    else:
+        p.append(10000)
+    if not TL:
+        p.append(p1)
+    else:
+        p.append(10000)
+    if not BR:
+        p.append(p2)
+    else:
+        p.append(10000)
+    if not TR:
+        p.append(p3)
+    else:
+        p.append(10000)
+
     tot = 0
+    maxList = []
 
-    if(BL==0):
-        tot+= ( (x - cBLx) ** 2 + (y - cBLy) ** 2 ) ** 0.5
-    if(TL==0):
-        tot+= ( (x - cTLx) ** 2 + (y - cTLy) ** 2 ) ** 0.5
-    if(BR==0):
-        tot+= ( (x - cBRx) ** 2 + (y - cBRy) ** 2 ) ** 0.5
-    if(TR==0):
-        tot+= ( (x - cTRx) ** 2 + (y - cTRy) ** 2 ) ** 0.5
+    if BL and TL and BR and TR:
+        pMin = 0
+    else:
+        pMin = min(p)
+        pIndex = p.index(pMin)
+        for i in range(0,4):
+            if i != pIndex:
+                maxList.append(distanceManattan(corners[pIndex],corners[i])*(1-b[i]))
+        tot = max(maxList)
+        
+    """"
+    c01 = distanceManattan(corners[0],corners[1]) *(1-BL)*(1-TL)
+    c02 = distanceManattan(corners[0],corners[2]) *(1-BL)*(1-BR)
+    c03 = distanceManattan(corners[0],corners[3]) *(1-BL)*(1-TR)
+    c12 = distanceManattan(corners[1],corners[2]) *(1-TL)*(1-BR)
+    c13 = distanceManattan(corners[1],corners[3]) *(1-TL)*(1-TR)
+    c23 = distanceManattan(corners[2],corners[3]) *(1-BR)*(1-TL)
+    """
 
+    #cMax = max(c01,c02,c03,c12,c13,c23)
 
-    return tot
+    return pMin+tot
+
+def distanceBetweenPoints(point1,point2,problem):
+    return ( (point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2 ) ** 0.5
+
+def distanceManattan(point1,point2):
+    return abs(point1[0] - point2[0]) + abs(point1[1] - point2[1])
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
