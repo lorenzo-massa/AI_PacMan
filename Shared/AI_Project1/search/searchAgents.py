@@ -34,6 +34,7 @@ description for details.
 Good luck and happy searching!
 """
 
+from operator import truediv
 from game import Directions
 from game import Agent
 from game import Actions
@@ -295,14 +296,22 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        return (self.startingPosition[0],self.startingPosition[1],False,False,False,False)
 
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        x,y,BL,TL,BR,TR = state
+
+        if BL == True and TL == True and BR == True and TR == True:
+            return True
+        else:
+            return False
+
 
     def getSuccessors(self, state):
         """
@@ -319,12 +328,29 @@ class CornersProblem(search.SearchProblem):
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             # Add a successor state to the successor list if the action is legal
             # Here's a code snippet for figuring out whether a new position hits a wall:
-            #   x,y = currentPosition
-            #   dx, dy = Actions.directionToVector(action)
-            #   nextx, nexty = int(x + dx), int(y + dy)
-            #   hitsWall = self.walls[nextx][nexty]
+            #x,y = state
+            #dx, dy = Actions.directionToVector(action)
+            #nextx, nexty = int(x + dx), int(y + dy)
+            #hitsWall = self.walls[nextx][nexty]
 
             "*** YOUR CODE HERE ***"
+            x,y,BL,TL,BR,TR = state
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+            hitsWall = self.walls[nextx][nexty]
+            if not hitsWall:
+                if (nextx,nexty) in self.corners:
+                    index = self.corners.index((nextx,nexty))
+                    if index == 0:
+                        BL = True
+                    if index == 1:
+                        TL = True
+                    if index == 2:
+                        BR = True
+                    if index == 3:
+                        TR = True
+                new = ((nextx,nexty,BL,TL,BR,TR), action, 1)
+                successors.append(new)
 
         self._expanded += 1 # DO NOT CHANGE
         return successors
@@ -360,7 +386,27 @@ def cornersHeuristic(state, problem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+
+    cBLx,cBLy = corners[0]
+    cTLx,cTLy = corners[1]
+    cBRx,cBRy = corners[2]
+    cTRx,cTRy = corners[3]
+
+
+    x,y,BL,TL,BR,TR = state
+    tot = 0
+
+    if(BL==0):
+        tot+= ( (x - cBLx) ** 2 + (y - cBLy) ** 2 ) ** 0.5
+    if(TL==0):
+        tot+= ( (x - cTLx) ** 2 + (y - cTLy) ** 2 ) ** 0.5
+    if(BR==0):
+        tot+= ( (x - cBRx) ** 2 + (y - cBRy) ** 2 ) ** 0.5
+    if(TR==0):
+        tot+= ( (x - cTRx) ** 2 + (y - cTRy) ** 2 ) ** 0.5
+
+
+    return tot
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"

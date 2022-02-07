@@ -94,6 +94,8 @@ def depthFirstSearch(problem):
 
     state = problem.getStartState()
 
+    print(state)
+
     path = [state,[]]
 
     queue.push(path)
@@ -126,6 +128,8 @@ def breadthFirstSearch(problem):
     "*** YOUR CODE HERE ***"
     ##util.raiseNotDefined()
 
+    #x,y,BL,TL,BR,TR = state
+
     visited = []
     queue = Queue()
 
@@ -140,16 +144,18 @@ def breadthFirstSearch(problem):
             node = path[0]
             if node not in visited:
                 visited.append(node)
-
+                
                 if problem.isGoalState(node): #goal test
-                        #print(path[1])
-                        return path[1]
+                    print(path[1])
+                    print(path[0])
+                    return path[1]
                     
 
                 for i in problem.getSuccessors(node): #creating neighbors
-                    neighborState = i [0] #next position (x,y)
+                    neighborState = i [0] #next state
                     #neighborDirection = i [1] #directions string
                     #cost = i[2]
+                   
                     pathN = []
                     
                     if neighborState not in visited: #visiting neighbors
