@@ -468,6 +468,13 @@ class FoodSearchProblem:
         self._expanded = 0 # DO NOT CHANGE
         self.heuristicInfo = {} # A dictionary for the heuristic to store information
 
+    #our functions
+    def getWalls(self):
+        return self.walls
+
+    def getPacmanPosition(self):
+        return self.start[0]
+    ##
     def getStartState(self):
         return self.start
 
@@ -501,6 +508,7 @@ class FoodSearchProblem:
                 return 999999
             cost += 1
         return cost
+
 
 class AStarFoodSearchAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -549,7 +557,8 @@ def foodHeuristic(state, problem):
     #distance between pacman and all the foods
 
     for food in foodList:
-        distanceP.append(distanceManattan((position[0],position[1]),food))
+        #distanceP.append(distanceManattan((position[0],position[1]),food))
+        distanceP.append(mazeDistance2((position[0],position[1]),food,problem))
 
     #get the min
     if len(distanceP)==0:
@@ -560,7 +569,9 @@ def foodHeuristic(state, problem):
         pIndex = distanceP.index(pMin)
         for i in range(0,len(foodList)):
             if i != pIndex:
-                maxList.append(distanceManattan(foodList[pIndex],foodList[i]))
+                #maxList.append(distanceManattan(foodList[pIndex],foodList[i]))
+                maxList.append(mazeDistance2(foodList[pIndex],foodList[i],problem))
+
         if len(maxList) != 0:
             tot = max(maxList)
 
@@ -626,6 +637,7 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         self._visited, self._visitedlist, self._expanded = {}, [], 0 # DO NOT CHANGE
 
         self.lastGoalState = gameState.getPacmanState().getPosition()
+        self.problem = gameState
 
     def isGoalState(self, state):
         """
@@ -640,7 +652,8 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         distanceP = []
         
         for food in foodList:
-            distanceP.append(distanceManattan((self.lastGoalState[0],self.lastGoalState[1]),food))
+            #distanceP.append(distanceManattan((self.lastGoalState[0],self.lastGoalState[1]),food))
+            distanceP.append(mazeDistance((self.lastGoalState[0],self.lastGoalState[1]),food, self.problem))
 
         #get the min
         if len(distanceP)==0:
@@ -671,5 +684,9 @@ def mazeDistance(point1, point2, gameState):
     walls = gameState.getWalls()
     assert not walls[x1][y1], 'point1 is a wall: ' + str(point1)
     assert not walls[x2][y2], 'point2 is a wall: ' + str(point2)
+    prob = PositionSearchProblem(gameState, start=point1, goal=point2, warn=False, visualize=False)
+    return len(search.bfs(prob))
+
+def mazeDistance2(point1, point2, gameState):
     prob = PositionSearchProblem(gameState, start=point1, goal=point2, warn=False, visualize=False)
     return len(search.bfs(prob))
