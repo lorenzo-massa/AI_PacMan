@@ -393,13 +393,6 @@ def cornersHeuristic(state, problem):
 
     "*** YOUR CODE HERE ***"
 
-
-    cBLx,cBLy = corners[0]
-    cTLx,cTLy = corners[1]
-    cBRx,cBRy = corners[2]
-    cTRx,cTRy = corners[3]
-
-
     x,y,BL,TL,BR,TR = state
 
     b = []
@@ -445,17 +438,6 @@ def cornersHeuristic(state, problem):
                 maxList.append(distanceManattan(corners[pIndex],corners[i])*(1-b[i]))
         tot = max(maxList)
         
-    """"
-    c01 = distanceManattan(corners[0],corners[1]) *(1-BL)*(1-TL)
-    c02 = distanceManattan(corners[0],corners[2]) *(1-BL)*(1-BR)
-    c03 = distanceManattan(corners[0],corners[3]) *(1-BL)*(1-TR)
-    c12 = distanceManattan(corners[1],corners[2]) *(1-TL)*(1-BR)
-    c13 = distanceManattan(corners[1],corners[3]) *(1-TL)*(1-TR)
-    c23 = distanceManattan(corners[2],corners[3]) *(1-BR)*(1-TL)
-    """
-
-    #cMax = max(c01,c02,c03,c12,c13,c23)
-
     return pMin+tot
 
 def distanceBetweenPoints(point1,point2,problem):
@@ -554,9 +536,36 @@ def foodHeuristic(state, problem):
     Subsequent calls to this heuristic can access
     problem.heuristicInfo['wallCount']
     """
+
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+
+    foodList = foodGrid.asList()
+
+    distanceP = []
+    maxList=[]
+    tot = 0
+
+    #distance between pacman and all the foods
+
+    for food in foodList:
+        distanceP.append(distanceManattan((position[0],position[1]),food))
+
+    #get the min
+    if len(distanceP)==0:
+        pMin = 0
+    else:
+        pMin = min(distanceP)
+    #from that node, calculate the max distance between this node the others
+        pIndex = distanceP.index(pMin)
+        for i in range(0,len(foodList)):
+            if i != pIndex:
+                maxList.append(distanceManattan(foodList[pIndex],foodList[i]))
+        if len(maxList) != 0:
+            tot = max(maxList)
+
+
+    return pMin+tot
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
@@ -587,7 +596,7 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return search.bfs(problem)
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
@@ -604,6 +613,7 @@ class AnyFoodSearchProblem(PositionSearchProblem):
     method.
     """
 
+
     def __init__(self, gameState):
         "Stores information from the gameState.  You don't need to change this."
         # Store the food for later reference
@@ -615,6 +625,8 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         self.costFn = lambda x: 1
         self._visited, self._visitedlist, self._expanded = {}, [], 0 # DO NOT CHANGE
 
+        self.lastGoalState = gameState.getPacmanState().getPosition()
+
     def isGoalState(self, state):
         """
         The state is Pacman's position. Fill this in with a goal test that will
@@ -623,7 +635,26 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         x,y = state
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        foodList = self.food.asList()
+        distanceP = []
+        
+        for food in foodList:
+            distanceP.append(distanceManattan((self.lastGoalState[0],self.lastGoalState[1]),food))
+
+        #get the min
+        if len(distanceP)==0:
+            pMin = 0
+            return True
+        else:
+            pMin = min(distanceP)
+            pIndex = distanceP.index(pMin)
+            if state == foodList[pIndex]:
+                self.lastGoalState = state
+                return True
+            else:
+                return False
+
 
 def mazeDistance(point1, point2, gameState):
     """
