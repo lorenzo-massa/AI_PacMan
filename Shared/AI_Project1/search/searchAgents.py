@@ -290,6 +290,12 @@ class CornersProblem(search.SearchProblem):
         # in initializing the problem
         "*** YOUR CODE HERE ***"
 
+    def getWalls(self):
+        return self.walls
+
+    def getPacmanPosition(self):
+        return 
+
     def getStartState(self):
         """
         Returns the start state (in your state space, not the full Pacman state
@@ -387,26 +393,58 @@ def cornersHeuristic(state, problem):
 
     "*** YOUR CODE HERE ***"
 
-    cBLx,cBLy = corners[0]
-    cTLx,cTLy = corners[1]
-    cBRx,cBRy = corners[2]
-    cTRx,cTRy = corners[3]
-
-
     x,y,BL,TL,BR,TR = state
+
+    b = []
+    b.append(BL)
+    b.append(TL)
+    b.append(BR)
+    b.append(TR)
+
+    p = []
+
+    p0 = distanceManattan((state[0],state[1]),corners[0])
+    p1 = distanceManattan((state[0],state[1]),corners[1])
+    p2 = distanceManattan((state[0],state[1]),corners[2])
+    p3 = distanceManattan((state[0],state[1]),corners[3])
+
+    if not BL:
+        p.append(p0)
+    else:
+        p.append(10000)
+    if not TL:
+        p.append(p1)
+    else:
+        p.append(10000)
+    if not BR:
+        p.append(p2)
+    else:
+        p.append(10000)
+    if not TR:
+        p.append(p3)
+    else:
+        p.append(10000)
+
     tot = 0
+    maxList = []
 
-    if(BL==0):
-        tot+= ( (x - cBLx) ** 2 + (y - cBLy) ** 2 ) ** 0.5
-    if(TL==0):
-        tot+= ( (x - cTLx) ** 2 + (y - cTLy) ** 2 ) ** 0.5
-    if(BR==0):
-        tot+= ( (x - cBRx) ** 2 + (y - cBRy) ** 2 ) ** 0.5
-    if(TR==0):
-        tot+= ( (x - cTRx) ** 2 + (y - cTRy) ** 2 ) ** 0.5
+    if BL and TL and BR and TR:
+        pMin = 0
+    else:
+        pMin = min(p)
+        pIndex = p.index(pMin)
+        for i in range(0,4):
+            if i != pIndex:
+                maxList.append(distanceManattan(corners[pIndex],corners[i])*(1-b[i]))
+        tot = max(maxList)
+        
+    return pMin+tot
 
+def distanceBetweenPoints(point1,point2,problem):
+    return ( (point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2 ) ** 0.5
 
-    return tot
+def distanceManattan(point1,point2):
+    return abs(point1[0] - point2[0]) + abs(point1[1] - point2[1])
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -430,6 +468,13 @@ class FoodSearchProblem:
         self._expanded = 0 # DO NOT CHANGE
         self.heuristicInfo = {} # A dictionary for the heuristic to store information
 
+    #our functions
+    def getWalls(self):
+        return self.walls
+
+    def getPacmanPosition(self):
+        return self.start[0]
+    ##
     def getStartState(self):
         return self.start
 
@@ -463,6 +508,7 @@ class FoodSearchProblem:
                 return 999999
             cost += 1
         return cost
+
 
 class AStarFoodSearchAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -498,9 +544,39 @@ def foodHeuristic(state, problem):
     Subsequent calls to this heuristic can access
     problem.heuristicInfo['wallCount']
     """
+
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+
+    foodList = foodGrid.asList()
+
+    distanceP = []
+    maxList=[]
+    tot = 0
+
+    #distance between pacman and all the foods
+
+    for food in foodList:
+        #distanceP.append(distanceManattan((position[0],position[1]),food))
+        distanceP.append(mazeDistance2((position[0],position[1]),food,problem))
+
+    #get the min
+    if len(distanceP)==0:
+        pMin = 0
+    else:
+        pMin = min(distanceP)
+    #from that node, calculate the max distance between this node the others
+        pIndex = distanceP.index(pMin)
+        for i in range(0,len(foodList)):
+            if i != pIndex:
+                #maxList.append(distanceManattan(foodList[pIndex],foodList[i]))
+                maxList.append(mazeDistance2(foodList[pIndex],foodList[i],problem))
+
+        if len(maxList) != 0:
+            tot = max(maxList)
+
+
+    return pMin+tot
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
@@ -531,7 +607,7 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return search.bfs(problem)
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
@@ -548,6 +624,7 @@ class AnyFoodSearchProblem(PositionSearchProblem):
     method.
     """
 
+
     def __init__(self, gameState):
         "Stores information from the gameState.  You don't need to change this."
         # Store the food for later reference
@@ -559,6 +636,9 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         self.costFn = lambda x: 1
         self._visited, self._visitedlist, self._expanded = {}, [], 0 # DO NOT CHANGE
 
+        self.lastGoalState = gameState.getPacmanState().getPosition()
+        self.problem = gameState
+
     def isGoalState(self, state):
         """
         The state is Pacman's position. Fill this in with a goal test that will
@@ -567,7 +647,27 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         x,y = state
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        foodList = self.food.asList()
+        distanceP = []
+        
+        for food in foodList:
+            #distanceP.append(distanceManattan((self.lastGoalState[0],self.lastGoalState[1]),food))
+            distanceP.append(mazeDistance((self.lastGoalState[0],self.lastGoalState[1]),food, self.problem))
+
+        #get the min
+        if len(distanceP)==0:
+            pMin = 0
+            return True
+        else:
+            pMin = min(distanceP)
+            pIndex = distanceP.index(pMin)
+            if state == foodList[pIndex]:
+                self.lastGoalState = state
+                return True
+            else:
+                return False
+
 
 def mazeDistance(point1, point2, gameState):
     """
@@ -584,5 +684,9 @@ def mazeDistance(point1, point2, gameState):
     walls = gameState.getWalls()
     assert not walls[x1][y1], 'point1 is a wall: ' + str(point1)
     assert not walls[x2][y2], 'point2 is a wall: ' + str(point2)
+    prob = PositionSearchProblem(gameState, start=point1, goal=point2, warn=False, visualize=False)
+    return len(search.bfs(prob))
+
+def mazeDistance2(point1, point2, gameState):
     prob = PositionSearchProblem(gameState, start=point1, goal=point2, warn=False, visualize=False)
     return len(search.bfs(prob))
