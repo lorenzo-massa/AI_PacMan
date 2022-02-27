@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 Aniello De Santis: 	2200079
 Lorenzo Massa:   	2200065
+=======
+Lorenzo Massa:		2200065
+Aniello De Santis:	2200079
+>>>>>>> 205b4dbb95346d6f70c8f75e29f8521f50ffab34
 
 NOTE: The grader should output 26/25
