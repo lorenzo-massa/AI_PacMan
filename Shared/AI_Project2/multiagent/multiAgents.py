@@ -18,6 +18,43 @@ import random, util
 
 from game import Agent
 
+
+##################NODE##########################
+
+class Node:
+
+    def __init__(self, state, agentIndex):
+        self.state = state
+        self.neighbors = []
+        self.agentIndex = agentIndex
+
+    def getState(self):
+        return self.state
+
+    def insertNode(self, node, cost):
+        self.neighbors.append((node, cost))
+    
+    def getNeighbors(self):
+        self.neighbors = self.generateNeighbors()
+        return self.neighbors
+
+    def generateNeighbors(self):
+        actions = self.state.getLegalActions(self.agentIndex)
+        neighbors = []
+        for a in actions:
+            newState = self.state.generateSuccessor(self.agentIndex, a)
+            if(self.state.getNumAgents()-1 == self.agentIndex):
+                ind = 0
+            else:
+                ind = self.agentIndex+1
+            n = Node(newState,ind)
+            neighbors.append(n)
+
+        return  neighbors 
+
+
+################################################
+
 class ReflexAgent(Agent):
     """
     A reflex agent chooses an action at each choice point by examining
@@ -74,7 +111,25 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
-        return successorGameState.getScore()
+
+        score = -1
+
+        ghostPositions = successorGameState.getGhostPositions()
+        minDistanceFromGhost = 1000000
+        for x in ghostPositions:
+            distance = manhattanDistance(newPos,x)
+            if distance < minDistanceFromGhost:
+                minDistanceFromGhost = distance
+
+        if minDistanceFromGhost < 2:
+            score -= 1
+
+        if newFood[newPos[0]][newPos[1]] == True:
+            score += 2
+
+        
+        return score
+        #return successorGameState.getScore()
 
 def scoreEvaluationFunction(currentGameState):
     """
@@ -110,6 +165,13 @@ class MinimaxAgent(MultiAgentSearchAgent):
     """
     Your minimax agent (question 2)
     """
+    def genTree(self, node, depth):
+        #print("State: ",node.state)
+        if(depth == self.depth):
+            return 0
+        else:
+            for a in node.getLegalActions():
+                return self.genTree(node.generateSuccessor(0,a),depth+1)
 
     def getAction(self, gameState):
         """
@@ -135,7 +197,15 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        root = gameState
+        depth = 0
+        self.genTree(root, depth)
+
+    
+        
+        #calcolare utility fino a depth
+        #scegliere azione che porta alla miglior utility
+        #util.raiseNotDefined()
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """

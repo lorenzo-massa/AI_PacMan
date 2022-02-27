@@ -40,7 +40,7 @@ import pacman
 import autograder
 # import grading
 
-VERBOSE = False
+VERBOSE = True
 
 
 class MultiagentTreeState(object):
