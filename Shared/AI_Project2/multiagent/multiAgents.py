@@ -18,43 +18,6 @@ import random, util
 
 from game import Agent
 
-
-##################NODE##########################
-
-class Node:
-
-    def __init__(self, state, agentIndex):
-        self.state = state
-        self.neighbors = []
-        self.agentIndex = agentIndex
-
-    def getState(self):
-        return self.state
-
-    def insertNode(self, node, cost):
-        self.neighbors.append((node, cost))
-    
-    def getNeighbors(self):
-        self.neighbors = self.generateNeighbors()
-        return self.neighbors
-
-    def generateNeighbors(self):
-        actions = self.state.getLegalActions(self.agentIndex)
-        neighbors = []
-        for a in actions:
-            newState = self.state.generateSuccessor(self.agentIndex, a)
-            if(self.state.getNumAgents()-1 == self.agentIndex):
-                ind = 0
-            else:
-                ind = self.agentIndex+1
-            n = Node(newState,ind)
-            neighbors.append(n)
-
-        return  neighbors 
-
-
-################################################
-
 class ReflexAgent(Agent):
     """
     A reflex agent chooses an action at each choice point by examining
@@ -165,13 +128,29 @@ class MinimaxAgent(MultiAgentSearchAgent):
     """
     Your minimax agent (question 2)
     """
-    def genTree(self, node, depth):
-        #print("State: ",node.state)
-        if(depth == self.depth):
-            return 0
+
+    def minimax(self, s, d, i):
+        values = []
+
+        if(s.isLose()):
+                return s.getScore(), "Stop"
+        if(s.isWin()):
+                return s.getScore(), "Stop"
+
+        #print(d)
+        if(d == self.depth):
+            return s.getScore(), "Stop"
+        if(i == 0):
+            for action in s.getLegalActions(0):
+                values.append(self.minimax(s.generateSuccessor(i, action), d, (i+1)%s.getNumAgents())[0])
+            return max(values), action
         else:
-            for a in node.getLegalActions():
-                return self.genTree(node.generateSuccessor(0,a),depth+1)
+            if (i == s.getNumAgents()-1):
+                    d+=1
+            for action in s.getLegalActions(i):
+                
+                values.append(self.minimax(s.generateSuccessor(i, action), d, (i+1)%s.getNumAgents())[0])
+            return min(values), action
 
     def getAction(self, gameState):
         """
@@ -197,11 +176,18 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
-        root = gameState
-        depth = 0
-        self.genTree(root, depth)
 
-    
+        values = []
+
+        for action in gameState.getLegalActions(0):
+                values.append((self.minimax(gameState.generateSuccessor(self.index, action), 0, self.index+1), action))
+
+        #value, action = self.minimax(gameState.state,0)
+
+        
+        i = values.index(max(values))
+
+        return values[i][1]
         
         #calcolare utility fino a depth
         #scegliere azione che porta alla miglior utility
