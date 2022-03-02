@@ -74,7 +74,25 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
-        return successorGameState.getScore()
+
+        score = -1
+
+        ghostPositions = successorGameState.getGhostPositions()
+        minDistanceFromGhost = 1000000
+        for x in ghostPositions:
+            distance = manhattanDistance(newPos,x)
+            if distance < minDistanceFromGhost:
+                minDistanceFromGhost = distance
+
+        if minDistanceFromGhost < 2:
+            score -= 1
+
+        if newFood[newPos[0]][newPos[1]] == True:
+            score += 2
+
+        
+        return score
+        #return successorGameState.getScore()
 
 def scoreEvaluationFunction(currentGameState):
     """
@@ -111,6 +129,29 @@ class MinimaxAgent(MultiAgentSearchAgent):
     Your minimax agent (question 2)
     """
 
+    def minimax(self, s, d, i):
+        values = []
+
+        if(s.isLose()):
+                return s.getScore(), "Stop"
+        if(s.isWin()):
+                return s.getScore(), "Stop"
+
+        #print(d)
+        if(d == self.depth):
+            return s.getScore(), "Stop"
+        if(i == 0):
+            for action in s.getLegalActions(0):
+                values.append(self.minimax(s.generateSuccessor(i, action), d, (i+1)%s.getNumAgents())[0])
+            return max(values), action
+        else:
+            if (i == s.getNumAgents()-1):
+                    d+=1
+            for action in s.getLegalActions(i):
+                
+                values.append(self.minimax(s.generateSuccessor(i, action), d, (i+1)%s.getNumAgents())[0])
+            return min(values), action
+
     def getAction(self, gameState):
         """
         Returns the minimax action from the current gameState using self.depth
@@ -135,7 +176,22 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        values = []
+
+        for action in gameState.getLegalActions(0):
+                values.append((self.minimax(gameState.generateSuccessor(self.index, action), 0, self.index+1), action))
+
+        #value, action = self.minimax(gameState.state,0)
+
+        
+        i = values.index(max(values))
+
+        return values[i][1]
+        
+        #calcolare utility fino a depth
+        #scegliere azione che porta alla miglior utility
+        #util.raiseNotDefined()
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
