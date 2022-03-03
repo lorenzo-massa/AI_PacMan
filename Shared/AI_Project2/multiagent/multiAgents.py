@@ -209,55 +209,75 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         alpha = float('-inf')
         beta = float('inf')
         
-        for action in gameState.getLegalActions(0):
+        for action in gameState.getLegalActions(0): #b1 b2
             v = self.min_value(gameState.generateSuccessor(self.index, action), 0, alpha, beta, self.index+1)
-            #print("print v: ", v)
+         #   print("print v: ", v)
             #print(alpha)
-            if v[0] >= alpha:
+            if v[0] >alpha:
+                
                 best_a = action
+                print("best_a: ",best_a)
                 alpha = v[0]
         return best_a
         #util.raiseNotDefined()
 
     def min_value(self, state, d, alpha, beta, i):
-
+        #print("in min index is: ", i)
+        v=float('inf')
+        
         if(state.isLose()):
+           #     print("score in min, lose state: ", state.getScore())
+
                 return state.getScore(), "Stop"
         if(state.isWin()):
+          #      print("score in min, win state: ", state.getScore())
+
                 return state.getScore(), "Stop"
 
         #print(d)
         if(d == self.depth):
+         #   print("score in min: ", state.getScore())
+            return state.getScore(), "Stop"
+        
+        for action in state.getLegalActions(i):
+            if (i+1)%state.getNumAgents()==0:
+                v = min(v, self.max_value(state.generateSuccessor(i, action), d+1, alpha, beta, (i+1)%state.getNumAgents())[0])
+            else :
+                v = min(v, self.min_value(state.generateSuccessor(i, action), d, alpha, beta, (i+1)%state.getNumAgents())[0])
+            if v<alpha:
+                return v, action
+            beta = min(beta,v)
+        #print("beta: ",beta)
+        return v, action
+
+    def max_value(self, state, d, alpha, beta, i):
+        #print("in max index is: ",i)
+        v=float('-inf')
+
+        if(state.isLose()):
+              #  print("score in max, lose state: ", state.getScore())
+
+                return state.getScore(), "Stop"
+        if(state.isWin()):
+             #   print("score in max, win state: ", state.getScore())
+
+                return state.getScore(), "Stop"
+
+
+        #print("depth: ", d)
+        if(d == self.depth):
+            #print("score in max: ", state.getScore())
             return state.getScore(), "Stop"
 
         for action in state.getLegalActions(i):
-            if (i+1)%state.getNumAgents()==0:
-                beta = min(beta, self.max_value(state.generateSuccessor(i, action), d+1, alpha, beta, (i+1)%state.getNumAgents())[0])
+            if (i+1)%state.getNumAgents() == 0:
+                v = max(v, self.max_value(state.generateSuccessor(i, action), d+1, alpha, beta, (i+1)%state.getNumAgents())[0])
             else :
-                beta = min(beta, self.min_value(state.generateSuccessor(i, action), d, alpha, beta, (i+1)%state.getNumAgents())[0])
-            if beta<=alpha:
-                return beta, action
-        return beta, action
-
-    def max_value(self, state, d, alpha, beta, i):
-
-            if(state.isLose()):
-                    return state.getScore(), "Stop"
-            if(state.isWin()):
-                    return state.getScore(), "Stop"
-
-            #print(d)
-            if(d == self.depth):
-                return state.getScore(), "Stop"
-
-            for action in state.getLegalActions(i):
-                if (i+1)%state.getNumAgents() == 0:
-                    beta = max(beta, self.max_value(state.generateSuccessor(i, action), d+1, alpha, beta, (i+1)%state.getNumAgents())[0])
-                else :
-                    beta = max(beta, self.min_value(state.generateSuccessor(i, action), d, alpha, beta, (i+1)%state.getNumAgents())[0])
-                if beta<=alpha:
-                    return alpha, action
-            return alpha, action
+                v = max(v, self.min_value(state.generateSuccessor(i, action), d, alpha, beta, (i+1)%state.getNumAgents())[0])
+            if beta<v:
+                return v, action
+            alpha = max(alpha,v)
+        return v, action
 
 
         
