@@ -31,6 +31,7 @@ import inspect
 import heapq
 import random
 import io
+import math
 
 
 class FixedRandom:
@@ -232,6 +233,8 @@ class PriorityQueueWithFunction(PriorityQueue):
         "Adds an item to the queue with priority from the priority function"
         PriorityQueue.push(self, item, self.priorityFunction(item))
 
+def euclideanDistance(xy1, xy2):
+    return math.sqrt( pow(xy1[0] - xy2[0],2) + pow(xy1[1] - xy2[1],2))
 
 def manhattanDistance(xy1, xy2):
     "Returns the Manhattan distance between points xy1 and xy2"

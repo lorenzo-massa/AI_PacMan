@@ -14,6 +14,7 @@
 
 
 from util import manhattanDistance
+from util import euclideanDistance
 from game import Directions
 import random, util
 
@@ -71,29 +72,30 @@ class ReflexAgent(Agent):
         successorGameState = currentGameState.generatePacmanSuccessor(action)
         newPos = successorGameState.getPacmanPosition()
         newFood = successorGameState.getFood()
-        newGhostStates = successorGameState.getGhostStates()
-        newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+        oldFood = currentGameState.getFood()
+        #newGhostStates = successorGameState.getGhostStates()
+        #newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
 
         score = -1
 
-        ghostPositions = successorGameState.getGhostPositions()
-        minDistanceFromGhost = 1000000
-        for x in ghostPositions:
-            distance = manhattanDistance(newPos,x)
-            if distance < minDistanceFromGhost:
-                minDistanceFromGhost = distance
-
-        if minDistanceFromGhost < 2:
-            score -= 1
-
-        if newFood[newPos[0]][newPos[1]] == True:
-            score += 2
-
+        if(successorGameState.isLose()):
+            return -float('inf')
+        if(successorGameState.isWin()):
+            return float('inf')
+        if Directions.STOP in action:
+            return -100
         
+        minDistanceFromFood = 1000000
+        for f in oldFood.asList():
+            distance = manhattanDistance(newPos,f)
+            if distance < minDistanceFromFood:
+                minDistanceFromFood = distance
+
+        score-=minDistanceFromFood
+
         return score
-        #return successorGameState.getScore()
 
 def scoreEvaluationFunction(currentGameState):
     """
@@ -286,16 +288,66 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
     """
       Your expectimax agent (question 4)
     """
+    def expectimax(self, s, d, i):
+            values = []
+            sum=0
+
+            if(s.isLose()):
+                    return s.getScore(), "Stop"
+            if(s.isWin()):
+                    return s.getScore(), "Stop"
+
+            #print(d)
+            if(d == self.depth):
+                return s.getScore(), "Stop"
+            if(i == 0):
+                for action in s.getLegalActions(0):
+                    values.append(self.expectimax(s.generateSuccessor(i, action), d, (i+1)%s.getNumAgents())[0])
+                return max(values), action
+            else:
+                if (i == s.getNumAgents()-1):
+                        d+=1
+                for action in s.getLegalActions(i):
+                    sum+=self.expectimax(s.generateSuccessor(i, action), d, (i+1)%s.getNumAgents())[0] / len(s.getLegalActions(i))
+                return sum, action
 
     def getAction(self, gameState):
         """
-        Returns the expectimax action using self.depth and self.evaluationFunction
+        Returns the minimax action from the current gameState using self.depth
+        and self.evaluationFunction.
 
-        All ghosts should be modeled as choosing uniformly at random from their
-        legal moves.
+        Here are some method calls that might be useful when implementing minimax.
+
+        gameState.getLegalActions(agentIndex):
+        Returns a list of legal actions for an agent
+        agentIndex=0 means Pacman, ghosts are >= 1
+
+        gameState.generateSuccessor(agentIndex, action):
+        Returns the successor game state after an agent takes an action
+
+        gameState.getNumAgents():
+        Returns the total number of agents in the game
+
+        gameState.isWin():
+        Returns whether or not the game state is a winning state
+
+        gameState.isLose():
+        Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        values = []
+
+        for action in gameState.getLegalActions(0):
+                values.append((self.expectimax(gameState.generateSuccessor(self.index, action), 0, self.index+1), action))
+
+        #value, action = self.minimax(gameState.state,0)
+
+        
+        i = values.index(max(values))
+
+        return values[i][1]
+        
 
 def betterEvaluationFunction(currentGameState):
     """
@@ -305,6 +357,7 @@ def betterEvaluationFunction(currentGameState):
     DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
+
     util.raiseNotDefined()
 
 # Abbreviation
